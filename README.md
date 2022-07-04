@@ -1,5 +1,5 @@
 # DeepFSPIS
-This repository contains the official implementation of "**Deep** **F**lexible **S**tructure **P**reserving **I**mage **S**moothing", which will appear in ACM Multimedia 2022.
+This repository contains the official implementation of "**Deep** **F**lexible **S**tructure **P**reserving **I**mage **S**moothing" [\[Link\]](https://papers.mingjia.li/DeepFSPIS.pdf), which will appear in ACM Multimedia 2022.
 
 Since We are working on another project, the code, together with documentation and demo will be made avaliable soon. 
 
