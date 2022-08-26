@@ -14,6 +14,12 @@ torchvision
 numpy
 ```
 
+### Component Drop
+
+The code of our heuristic component drop can be found [here](https://github.com/lime-j/component_drop). 
+
+Please install component drop first.
+
 ### Inference 
 
 Inference is quite simple, as the example below.
@@ -27,11 +33,6 @@ python batch_inference.py              \
        --lamb=0.6,0.5,0.4  
 ```
 
-## Code
-
-### Component Drop
-
-The code of our heuristic component drop can be found [here](https://github.com/lime-j/component_drop).
 
 ## Results
 
