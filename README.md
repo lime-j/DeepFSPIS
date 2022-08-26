@@ -6,6 +6,8 @@ This repository contains the official implementation of "**Deep** **F**lexible *
 
 Currently, we have released the inference code of DeepFSPIS. (My training code is messy, will release after refactoring.) 
 
+The released checkpoints are trained with BSDS500 Train-set and the first 5000 image (in the ascending alphabetical order of their filename) from MS-COCO.
+
 ### Dependencies
 
 ```
