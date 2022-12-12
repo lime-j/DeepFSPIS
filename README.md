@@ -3,11 +3,12 @@ This repository contains the official implementation of "**Deep** **F**lexible *
 
 ![teasor](https://raw.githubusercontent.com/lime-j/DeepFSPIS/main/teaser.png)
 
+Demo is avaliable at [here](https://replicate.com/lime-j/deepfspis)! 
+
+
 ## Code
 
-Currently, we have released the inference code of DeepFSPIS. (My training code is messy, will release after refactoring.) 
-
-The released checkpoints are trained with BSDS500 Train-set and the first 5000 image (in the ascending alphabetical order of their filename) from MS-COCO.
+The released checkpoints are trained with BSDS500 Train-set and the first 10000 image (in the ascending alphabetical order of their filename) from MS-COCO.
 
 ### Dependencies
 
@@ -23,6 +24,20 @@ The code of our heuristic component drop can be found [here](https://github.com/
 
 Please install component drop first.
 
+### Training
+
+First, download pre-computed edge maps from [link](http://checkpoints.mingjia.li/coco_edge.zip) and train adjuster as follows:
+
+```
+python train_adjuster.py --train_dir=<COCO training image dir> --edge_dir=<COCO_edge> --workdir=./train_adjuster
+```
+
+Then train smoother as follows :
+
+```
+python train_smoother.py --train_dataset_path=<COCO train image dir> --val_dataset_path=<COCO val image dir> --workdir=./train_smoother
+```
+
 ### Inference 
 
 Inference is quite simple, as the example below.
@@ -36,6 +51,7 @@ python batch_inference.py              \
        --lamb=0.6,0.5,0.4  
 ```
 
+You can also use our online demo at [here](https://replicate.com/lime-j/deepfspis)
 
 ## Results
 

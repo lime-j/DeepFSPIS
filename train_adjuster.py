@@ -14,8 +14,8 @@ from trainer import AdjusterTrainer
 
 torch.backends.cudnn.benchmark = True
 parser = argparse.ArgumentParser()
-parser.add_argument('--epoch', type=int, default=13, help='epoch to start training from')
-parser.add_argument('--n_epochs', type=int, default=50, help='number of epochs of training')
+parser.add_argument('--epoch', type=int, default=0, help='epoch to start training from')
+parser.add_argument('--n_epochs', type=int, default=20, help='number of epochs of training')
 parser.add_argument('--workdir', type=str, default='./smoother_training', help='working directory of trainer')
 parser.add_argument('--train_dir', type=str, default="/home/lmj/dataset/train2017", help='path of train dataset')
 parser.add_argument('--edge_dir', type=str, default="/home/lmj/dataset/train2017", help='path of train dataset')
