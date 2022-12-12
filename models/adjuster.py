@@ -107,7 +107,7 @@ class Adjuster(nn.Module):
         for k, v in self.named_parameters():
             print("k: {},  requires_grad: {}".format(k, v.requires_grad))
 
-    def forward(self, x, lam=0, fn=None):
+    def forward(self, x, lam=0, inference=False):
         input_curr = x
         n, c, h, w = x.shape
 
@@ -118,6 +118,7 @@ class Adjuster(nn.Module):
         actual_lam = max(0.2, lam)
         tmp = self.fuser(torch.cat([state, actual_lam * siamese_state], dim=-3)) 
         mask =  self.to_edge(tmp)
+        if not inference : return mask
         mask_org = mask.clone()
         thresh = 0.05
         mask_org[mask < thresh] = 0
@@ -129,7 +130,7 @@ class Adjuster(nn.Module):
             mask[mask >= thresh] = 1
             mask = (mask).type(torch.uint8)
             mask = connected_components_labeling(mask.squeeze(1), torch.tensor(lam))#
-            edge = mask[0].unsqueeze(1) #* mask_org
+            edge = mask.unsqueeze(1) #* mask_org
             return edge * mask_org * grad
         
         else : return mask_org * grad if lam < 0.9 else torch.sqrt(mask_org * grad)

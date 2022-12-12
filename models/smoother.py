@@ -3,19 +3,6 @@ import torch.nn.functional as F
 import torch
 import time
 
-def weights_init_normal(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
-    elif classname.find('BatchNorm2d') != -1:
-        torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0.0)
-
-
-##############################
-#           RESNET
-##############################
-
 class ResnetBlock(nn.Module):
     def __init__(self, dim, dilation, norm_layer=nn.Identity, use_dropout=False, use_bias=True):
         super(ResnetBlock, self).__init__()
@@ -23,7 +10,7 @@ class ResnetBlock(nn.Module):
 
     def build_conv_block(self, dim, dilation, norm_layer, use_dropout, use_bias):
         conv_block = []
-        #conv_block = []
+
         conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=dilation, dilation=dilation, bias=use_bias),
                        PALayer(dim),CALayer(dim),
                        norm_layer(dim),
@@ -202,36 +189,38 @@ class UNet(nn.Module):
         return u4
         
 class Smoother(nn.Module):
-    def __init__(self):
+    def __init__(self, inference_only=True):
+        r'''
+            inference_only : If inference_only is True, ignore side-outputs
+        '''
         super(Smoother, self).__init__()
         self.is_cuda = torch.cuda.is_available()
-        self.nfc = 32
-        self.min_nfc = 32
-        self.num_layer = 8
-        N = self.nfc
+        self.inference_only = inference_only
 
-        model = []
-
-        backbone0 = [BasicBlock("Conv", 4, 32, 1)]
-        backbone0 += [BasicBlock("Conv", 32,32, 1)]
-        backbone0 += [ResnetBlock(32, 1)]
-        self.backbone0 = nn.Sequential(*backbone0)
+        self.backbone0 = nn.Sequential(*[
+                        BasicBlock("Conv", 4, 32, 1),
+                        BasicBlock("Conv", 32,32, 1),
+                        ResnetBlock(32, 1)
+        ])
         
-        backbone1 = [ResnetBlock(32, 1)]
-        backbone1 += [ResnetBlock(32, 1)]
-        backbone1 += [nn.MaxPool2d(2)]
-        self.backbone1 = nn.Sequential(*backbone1)
-        self.up1 = UpBlock(32, 32)     
+        self.backbone1 = nn.Sequential(*[
+                        ResnetBlock(32, 1),
+                        ResnetBlock(32, 1),
+                        nn.MaxPool2d(2)
+        ])
 
-        backbone2 = [ResnetBlock(32, 1)]
-        backbone2 += [ResnetBlock(32, 1)]
-        backbone2 += [nn.MaxPool2d(2)]
-        self.backbone2 = nn.Sequential(*backbone2)
+
+        self.backbone2 = nn.Sequential(*[
+                        ResnetBlock(32, 1),
+                        ResnetBlock(32, 1),
+                        nn.MaxPool2d(2)
+        ])
+
+        if not inference_only:
+            self.up1 = UpBlock(32, 32)   
         self.up21 = UpBlock(32, 32)     
         self.up22 = UpBlock(32, 32) 
-        body0 = [UNet(32)]
-        body1 = [UNet(32)]
-        body2 = [UNet(32)]
+        body0, body1, body2 = [UNet(32)], [UNet(32)], [UNet(32)]
         self.body0, self.body1, self.body2 = nn.Sequential(*body0), nn.Sequential(*body1), nn.Sequential(*body2)
         
         outy = [BasicBlock("Conv", 32, 32, 1)]
@@ -239,22 +228,21 @@ class Smoother(nn.Module):
 
         self.outy = nn.Sequential(*outy)
 
+        
+    def forward(self, x, edges, inference=True):
 
-        for k,v in self.named_parameters():
-            print("k: {},  requires_grad: {}".format(k,v.requires_grad)) 
-
-    def forward(self, x, edges):
         in_stage0 = self.backbone0(torch.cat([x, edges], dim=1))
         body_stage0 = self.body0(in_stage0)
-        #out_stage0 = self.outy(body_stage0) #+ x
-        
         in_stage1 = self.backbone1(body_stage0)
         body_stage1 = self.body1(in_stage1)
-        #out_stage1 = self.outy(self.up1(body_stage1, body_stage0)) #+ x
-        
         in_stage2 = self.backbone2(body_stage1)
         body_stage2 = self.body2(in_stage2)
-        out_stage2 = self.outy(self.up21(self.up22(body_stage2, body_stage1), body_stage0)) #+ x
+        out_stage2 = self.outy(self.up21(self.up22(body_stage2, body_stage1), body_stage0))
+
+        if not inference:
+            out_stage0 = self.outy(body_stage0) #+ x
+            out_stage1 = self.outy(self.up1(body_stage1, body_stage0)) #+ x
+            return out_stage0, out_stage1, out_stage2
         
-        return  out_stage2
+        return out_stage2
 

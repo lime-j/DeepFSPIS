@@ -1,3 +1,6 @@
 __pycache__
 models/__pycache__
 data/__pycache__
+smoother_training
+train_smooth_testing
+results
