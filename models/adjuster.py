@@ -118,7 +118,7 @@ class Adjuster(nn.Module):
         actual_lam = max(0.2, lam)
         tmp = self.fuser(torch.cat([state, actual_lam * siamese_state], dim=-3)) 
         mask =  self.to_edge(tmp)
-        if not inference : return mask * grad 
+        if not inference : return mask
         mask_org = mask.clone()
         thresh = 0.05
         mask_org[mask < thresh] = 0
