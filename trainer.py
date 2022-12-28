@@ -155,7 +155,7 @@ class SmootherTrainer(Trainer):
                 input_image = batch['img'].to("cuda:0")
 
                 with torch.no_grad():
-                    mask_images = self.adjuster(input_image, lamb)
+                    mask_images = self.adjuster(input_image, lamb, inference=True)
                 
                 generated_images0, generated_images1, generated_images2 = self.model(input_image, mask_images, inference=False)
 
