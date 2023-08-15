@@ -216,8 +216,8 @@ class Smoother(nn.Module):
                         nn.MaxPool2d(2)
         ])
 
-        if not inference_only:
-            self.up1 = UpBlock(32, 32)   
+        #if not inference_only:
+        self.up1 = UpBlock(32, 32)   
         self.up21 = UpBlock(32, 32)     
         self.up22 = UpBlock(32, 32) 
         body0, body1, body2 = [UNet(32)], [UNet(32)], [UNet(32)]
